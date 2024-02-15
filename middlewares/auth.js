@@ -10,7 +10,9 @@ export const isAuthenticated = catchAsyncErrors(async (req, res, next) => {
   }
   const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
 
-  req.user = await User.findById(decoded.id);
+  // req.user = await User.findById(decoded.id);
+  req.user = await User.findOne({email:decoded.email});
+  console.log(req.user)
   if (!req.user) {
     return res.status(401).json({ success: false, message: 'User not found' });
   }
