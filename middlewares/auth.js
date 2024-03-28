@@ -12,10 +12,13 @@ export const isAuthenticated = catchAsyncErrors(async (req, res, next) => {
 
   // req.user = await User.findById(decoded.id);
   req.user = await User.findOne({email:decoded.email});
-  console.log(req.user)
+  // console.log(req.user)
   if (!req.user) {
     return res.status(401).json({ success: false, message: 'User not found' });
   }
 
   next();
 });
+
+
+

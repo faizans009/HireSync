@@ -25,24 +25,35 @@ const userSchema = new mongoose.Schema({
     // maxLength: [32, "Password cannot exceed 32 characters!"],
     select: false,
   },
-  otp: {
-    value: {
-      type: Number,
-      default: null,
-    },
-    createdAt : {
-      type: Date,
-      default: null,
-    },
-    expiresAt: {
-      type: Date,
-      default: null,
-    },
-  },
-  isVerified: {
+  // otp: {
+  //   value: {
+  //     type: Number,
+  //     default: null,
+  //   },
+  //   createdAt : {
+  //     type: Date,
+  //     default: null,
+  //   },
+  //   expiresAt: {
+  //     type: Date,
+  //     default: null,
+  //   },
+  // },
+  // isVerified: {
+  //   type: Boolean,
+  //   default: false,
+  // },
+  ////////////////////////////
+  isAvatarImageSet: {
     type: Boolean,
-    default: false,
+    default: true,
   },
+  avatarImage: {
+    type: String,
+    default: "yolo",
+  },
+  ////////////////////////////////////////////////////////////////
+
   role: {
     type: String,
     required: [true, "Please select a role"],
@@ -53,7 +64,6 @@ const userSchema = new mongoose.Schema({
     default: Date.now,
   },
 });
-
 
 //ENCRYPTING THE PASSWORD WHEN THE USER REGISTERS OR MODIFIES HIS PASSWORD
 userSchema.pre("save", async function (next) {
@@ -68,11 +78,15 @@ userSchema.methods.comparePassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-//GENERATING A JWT TOKEN WHEN A USER REGISTERS OR LOGINS, IT DEPENDS ON OUR CODE THAT WHEN DO WE NEED TO GENERATE THE JWT TOKEN WHEN THE USER LOGIN OR REGISTER OR FOR BOTH. 
+//GENERATING A JWT TOKEN WHEN A USER REGISTERS OR LOGINS, IT DEPENDS ON OUR CODE THAT WHEN DO WE NEED TO GENERATE THE JWT TOKEN WHEN THE USER LOGIN OR REGISTER OR FOR BOTH.
 userSchema.methods.getJWTToken = function () {
-  return jwt.sign({ id: this._id ,email: this.email}, process.env.JWT_SECRET_KEY, {
-    expiresIn: process.env.JWT_EXPIRES,
-  });
+  return jwt.sign(
+    { id: this._id, email: this.email },
+    process.env.JWT_SECRET_KEY,
+    {
+      expiresIn: process.env.JWT_EXPIRES,
+    }
+  );
 };
 
 export const User = mongoose.model("User", userSchema);
