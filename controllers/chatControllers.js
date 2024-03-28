@@ -1,13 +1,31 @@
 import { User } from "../models/userSchema.js";
+import Messages from "../models/messageModel.js";
 const user = User;
 export const chatIUserController = {
   getAllUsers: async (req, res, next) => {
     try {
       console.log("all user api hit");
-      const users = await user
-        .find({ _id: { $ne: req.params.id } })
-        .select(["email", "name", "avatarImage", "_id"]);
-        
+      const userId = req.params.id
+
+
+      const messages = await Messages.find({
+        users: { $in: [userId] },
+      });
+
+      const otherUsers = messages.reduce((acc, curr) => {
+        curr.users.forEach((user) => {
+          if (user !== userId && !acc.find((accUser) => accUser._id === user)) {
+            acc.push(user);
+          }
+        });
+        return acc;
+      }, []);
+
+      const users = await User.find({
+        _id: { $in: otherUsers },
+      }).select(["email", "name", "avatarImage", "_id"]);
+
+      console.log(users)
       return res.json(users);
     } catch (ex) {
       next(ex);
