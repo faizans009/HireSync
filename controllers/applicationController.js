@@ -99,6 +99,24 @@ export const employerGetAllApplications = catchAsyncErrors(
   }
 );
 
+export const changeMessageStatus= catchAsyncErrors(
+  async (req, res, next) => {
+    const {id}=req.body
+    const application = await Application.findById(id);
+    if (!application) {
+      return next(new ErrorHandler("Application not found!", 404));
+    }
+    if(application.messageSent){
+      return next(new ErrorHandler("Message already sent!", 400));
+    }
+    application.messageSent=true
+    await application.save()
+    res.status(200).json({
+      success: true,
+      message:"Status updated!"
+    });
+  }
+)
 export const jobseekerGetAllApplications = catchAsyncErrors(
   async (req, res, next) => {
     const { role } = req.user;

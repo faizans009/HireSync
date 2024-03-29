@@ -58,7 +58,12 @@ const applicationSchema = new mongoose.Schema({
       enum: ["Employer"],
       required: true,
     },
+    
   },
+  messageSent:{
+    type:Boolean,
+    default:false
+  }
 });
 
 export const Application = mongoose.model("Application", applicationSchema);
