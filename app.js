@@ -5,6 +5,7 @@ import userRouter from "./routes/userRoutes.js";
 import applicationRouter from "./routes/applicationRoutes.js";
 import chatRouter from "./routes/chatRoutes.js";
 import messageRouter from "./routes/messageRoutes.js";
+import testPortalRouter from "./routes/testPortalRoutes.js";
 import { config } from "dotenv";
 import cors from "cors";
 import { errorMiddleware } from "./middlewares/error.js";
@@ -35,6 +36,7 @@ app.use(
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/job", jobRouter);
 app.use("/api/v1/application", applicationRouter);
+app.use("/api/v1/test", testPortalRouter);
 app.use("/api/auth", messageRouter);
 app.use("/api/messages", chatRouter);
 dbConnection();
