@@ -12,12 +12,7 @@ const server = app.listen(process.env.PORT, () => {
 });
 //////////////////////////
 const io = new Server(server, { cors: { origin: "*" } });
-// const io = socket(server, {
-//   cors: {
-//     origin: "http://localhost:3000",
-//     credentials: true,
-//   },
-// });
+
 
 global.onlineUsers = new Map();
 io.on("connection", (socket) => {

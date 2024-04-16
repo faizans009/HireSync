@@ -63,6 +63,7 @@ export const postApplication = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("Please fill all fields.", 400));
   }
   const application = await Application.create({
+    jobId,
     name,
     email,
     coverLetter,
