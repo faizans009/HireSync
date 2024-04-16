@@ -6,6 +6,6 @@ const router = express.Router();
 router
 .post("/createTest/:job", createTest)
 .get("/getTest/:job", getTest)
-.post("/submitTest/:job", submitTest)
+.post("/submitTest/:job/:application", submitTest)
 
 export default router;

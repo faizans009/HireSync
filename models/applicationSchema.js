@@ -63,6 +63,15 @@ const applicationSchema = new mongoose.Schema({
   messageSent:{
     type:Boolean,
     default:false
+  },
+  
+  totalMarks:{
+    type:String,
+    default:null
+  },
+  obtainedMarks:{
+    type:String,
+    default:null
   }
 });
 
