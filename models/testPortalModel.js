@@ -5,8 +5,7 @@ const testSchema= new mongoose.Schema({
     },
     options:
         [
-            {
-                
+            {  
                 value:{
                    type: String
                 },

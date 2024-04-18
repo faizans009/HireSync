@@ -4,7 +4,6 @@ const user = User;
 export const chatIUserController = {
   getAllUsers: async (req, res, next) => {
     try {
-      console.log("all user api hit");
       const userId = req.params.id
 
 
@@ -25,7 +24,6 @@ export const chatIUserController = {
         _id: { $in: otherUsers },
       }).select(["email", "name", "avatarImage", "_id"]);
 
-      console.log(users)
       return res.json(users);
     } catch (ex) {
       next(ex);

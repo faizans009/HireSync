@@ -57,7 +57,7 @@ const jobSchema = new mongoose.Schema({
     type: mongoose.Schema.ObjectId,
     ref: "User",
     required: true,
-  }
+  },
 });
 
 export const Job = mongoose.model("Job", jobSchema);

@@ -10,6 +10,7 @@ export const errorMiddleware = (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
 
   if (err.name === "CastError") {
+    console.log("123")
     const message = `Resource not found. Invalid ${err.path}`;
     err = new ErrorHandler(message, 400);
       
