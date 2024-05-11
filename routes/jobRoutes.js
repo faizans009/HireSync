@@ -2,16 +2,18 @@ import express from "express";
 import {
   deleteJob,
   getAllJobs,
+  getAllJobsAdmin,
   getMyJobs,
   getSingleJob,
   postJob,
   updateJob,
 } from "../controllers/jobController.js";
-import { isAuthenticated } from "../middlewares/auth.js";
+import { authorizeRoles, isAuthenticated } from "../middlewares/auth.js";
 
 const router = express.Router();
 
 router.get("/getall", getAllJobs);
+router.get("/getAllJobsAdmin",isAuthenticated, authorizeRoles("Admin"),getAllJobsAdmin);
 router.post("/post", isAuthenticated, postJob);
 router.get("/getmyjobs", isAuthenticated, getMyJobs);
 router.put("/update/:id", isAuthenticated, updateJob);

@@ -138,3 +138,11 @@ export const getSingleJob = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler(`Invalid ID / CastError`, 404));
   }
 });
+
+export const getAllJobsAdmin = catchAsyncErrors(async (req, res, next) => {
+  const jobs = await Job.find({ expired: false }).sort({ jobPostedOn: -1 });
+  res.status(200).json({
+    success: true,
+    jobs,
+  });
+});

@@ -18,7 +18,7 @@ import ErrorHandler from "../middlewares/error.js";
 
 const transporter = nodemailer.createTransport({
     // host: process.env.SMTP_HOST,
-    service: 'gmail', // Set to true if you're using SMTPS
+    service: 'gmail', 
     auth: {
       user: "muhammadfaizanmu75@gmail.com",
       pass: "srbj hatz lbll pmgo",

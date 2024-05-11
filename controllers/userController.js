@@ -15,6 +15,9 @@ export const register = catchAsyncErrors(async (req, res, next) => {
     if (!name || !email || !phone || !password || !role) {
       return next(new ErrorHandler("Please fill full form!"));
     }
+    // if (role === "admin") {
+    //   return next(new ErrorHandler("Admin account already exists!"));
+    // }
     const isEmail = await User.findOne({ email });
     if (isEmail) {
       return next(new ErrorHandler("Email already registered!"));
@@ -248,6 +251,11 @@ export const allUsers = async (req, res) => {
         : {};
     
       const users = await User.find(keyword).find({ _id: { $ne: req.user._id } });
+      res.send(users);
+    };
+export const getAllUsersData = async (req, res,next) => {
+  
+      const users = await User.find();
       res.send(users);
     };
 
