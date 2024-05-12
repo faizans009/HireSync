@@ -18,6 +18,6 @@ router.get("/employer/getall", isAuthenticated, employerGetAllApplications);
 router.get("/admin/getall",isAuthenticated,authorizeRoles("Admin"),  adminGetAllApplications);
 router.get("/jobseeker/getall", isAuthenticated, jobseekerGetAllApplications);
 router.delete("/delete/:id", isAuthenticated, jobseekerDeleteApplication);
-router.post('/saveDocumentToServer',isAuthenticated,saveDocumentToServer);
+router.post('/saveDocumentToServer',saveDocumentToServer);
 
 export default router;
