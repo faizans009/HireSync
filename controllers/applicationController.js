@@ -5,55 +5,63 @@ import { Job } from "../models/jobSchema.js";
 import multer from "multer";
 import path from "path";
 // import cloudinary from "cloudinary";
-
-
+import fs from 'fs';
+// ------------------------------------ Upload Document Logic --------------------------------------
 const allowedDocumentType = ['application/pdf'];
 
 const DocumentFilter = (req, file, cb) => {
-    if (allowedDocumentType.includes(file.mimetype)) {
-        cb(null, true);
-    } else {
-        cb(new Error('Only PDF Allowed!'), false);
-    }
+  if (allowedDocumentType.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only PDF Allowed!'), false);
+  }
 };
 
 const store = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, path.join(__dirname, '../../uploads'));
-    },
-    filename: function (req, file, cb) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        const fileExtension = path.extname(file.originalname);
-        cb(null, file.fieldname + '-' + uniqueSuffix + fileExtension);
-    }
+  destination: function (req, file, cb) {
+    const uploadDir = './uploads'; // Destination directory
+    // Check if the directory exists, if not, create it
+    fs.mkdir(uploadDir, { recursive: true }, function (err) {
+      if (err) {
+        return cb(err);
+      }
+      cb(null, uploadDir);
+    });
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const fileExtension = path.extname(file.originalname);
+    cb(null, file.fieldname + '-' + uniqueSuffix + fileExtension);
+  }
 });
 
 const upload = multer({ storage: store, fileFilter: DocumentFilter });
 
+// Upload Document API
 export const saveDocumentToServer = async (req, res) => {
-    try {
-        upload.single('resume')(req, res, (err) => {
-            if (err instanceof multer.MulterError) {
-                return res.status(400).json({ Message: "multer error", error: err.message });
-            } 
-            else if (err) {
-                return res.status(500).json({ Message: "internal server error1", Error: err.message });
-            }
+  try {
+    upload.single('resume')(req, res, (err) => {
+      if (err instanceof multer.MulterError) {
+        return res.status(400).json({ Message: "multerError", error: err.message });
+      } else if (err) {
+        console.log(err)
+        return res.status(500).json({ Message: "errorUploadingDocument", Error: err.message });
+      }
 
-            if (!req.file) {
-                return res.status(400).json({ Message: "file not uploaded" });
-            }
+      if (!req?.file) {
+        return res.status(400).json({ Message: "enterAllFields" });
+      }
 
-            const fileType = req.file.mimetype;
-            const fileName = req.file.filename;
-            const fileURL = `${fileName}`;
+      const fileType = req.file.mimetype;
+      const fileName = req.file.filename;
+      const fileURL = `${fileName}`;
 
-            res.status(200).json({ message: "file uploaded successfully", url: fileURL });
-        });
+      res.status(200).json({ message: "documentUploadedSuccessfully", url: fileURL });
+    });
 
-    } catch (error) {
-        res.status(500).json({ message: "internal server error", Error: error.message });
-    }
+  } catch (error) {
+    res.status(500).json({ message: "errorUploadingDocument", Error: error.message });
+  }
 };
 
 
@@ -65,26 +73,26 @@ export const postApplication = catchAsyncErrors(async (req, res, next) => {
     );
   }
 
-//   let fileName;
-//   let error=false;
-//   upload.single('resume')(req, res, (err) => {
-//     if (err instanceof multer.MulterError) {
-//      error=true
+  //   let fileName;
+  //   let error=false;
+  //   upload.single('resume')(req, res, (err) => {
+  //     if (err instanceof multer.MulterError) {
+  //      error=true
 
-//     } else if (err) {
-//       error=true
-//     }
+  //     } else if (err) {
+  //       error=true
+  //     }
 
-//     if (!req.file) {
-//       error=true
-//     }
+  //     if (!req.file) {
+  //       error=true
+  //     }
 
-//     fileName = req.file.filename;
-//     console.log(fileName);
-//   });
-// if (!error){
-//   return next(new ErrorHandler("error uploading file", 404))
-// }
+  //     fileName = req.file.filename;
+  //     console.log(fileName);
+  //   });
+  // if (!error){
+  //   return next(new ErrorHandler("error uploading file", 404))
+  // }
   const { name, email, coverLetter, phone, address, jobId } = req.body;
   if (!jobId) {
     return next(new ErrorHandler("Job not found!", 404));
@@ -149,21 +157,21 @@ export const employerGetAllApplications = catchAsyncErrors(
   }
 );
 
-export const changeMessageStatus= catchAsyncErrors(
+export const changeMessageStatus = catchAsyncErrors(
   async (req, res, next) => {
-    const {id}=req.body
+    const { id } = req.body
     const application = await Application.findById(id);
     if (!application) {
       return next(new ErrorHandler("Application not found!", 404));
     }
-    if(application.messageSent){
+    if (application.messageSent) {
       return next(new ErrorHandler("Message already sent!", 400));
     }
-    application.messageSent=true
+    application.messageSent = true
     await application.save()
     res.status(200).json({
       success: true,
-      message:"Status updated!"
+      message: "Status updated!"
     });
   }
 )
@@ -209,7 +217,7 @@ export const adminGetAllApplications = catchAsyncErrors(
   async (req, res, next) => {
     // if (!(req.user.role === "Admin" )) {
     //   return next(new ErrorHandler("Unauthorized. Only admin can get users data.", 403));
-   
+
     // }
     const applications = await Application.find();
     res.status(200).json({

@@ -10,8 +10,12 @@ import { config } from "dotenv";
 import cors from "cors";
 import { errorMiddleware } from "./middlewares/error.js";
 import cookieParser from "cookie-parser";
-import fileUpload from "express-fileupload";
-
+import path from 'path'
+import { dirname } from "node:path";
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+console.log(__dirname)
 const app = express();
 config({ path: "./config/config.env" });
 
@@ -23,16 +27,11 @@ app.use(
   })
 );
 
+
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-app.use(
-  fileUpload({
-    useTempFiles: true,
-    tempFileDir: "/tmp/",
-  })
-);
+app.use('/', express.static(path.join(__dirname, './uploads'))); // E.G: http://localhost:4000/resume-1715576880008-425913424.pdf
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/job", jobRouter);
 app.use("/api/v1/application", applicationRouter);
