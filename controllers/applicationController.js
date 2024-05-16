@@ -38,6 +38,7 @@ const store = multer.diskStorage({
 const upload = multer({ storage: store, fileFilter: DocumentFilter });
 
 // Upload Document API
+
 export const saveDocumentToServer = async (req, res) => {
   try {
     upload.single('resume')(req, res, (err) => {
@@ -72,30 +73,12 @@ export const postApplication = catchAsyncErrors(async (req, res, next) => {
       new ErrorHandler("Employer not allowed to access this resource.", 400)
     );
   }
-
-  //   let fileName;
-  //   let error=false;
-  //   upload.single('resume')(req, res, (err) => {
-  //     if (err instanceof multer.MulterError) {
-  //      error=true
-
-  //     } else if (err) {
-  //       error=true
-  //     }
-
-  //     if (!req.file) {
-  //       error=true
-  //     }
-
-  //     fileName = req.file.filename;
-  //     console.log(fileName);
-  //   });
-  // if (!error){
-  //   return next(new ErrorHandler("error uploading file", 404))
-  // }
-  const { name, email, coverLetter, phone, address, jobId } = req.body;
+console.log(req.body)
+  const { name, email, coverLetter, phone, resume,address, jobId } = req.body;
+  console.log(jobId)
   if (!jobId) {
-    return next(new ErrorHandler("Job not found!", 404));
+    
+    return next(new ErrorHandler("Job id not found!", 400));
   }
   const jobDetails = await Job.findById(jobId);
   if (!jobDetails) {
@@ -112,7 +95,7 @@ export const postApplication = catchAsyncErrors(async (req, res, next) => {
     !coverLetter ||
     !phone ||
     !address ||
-    !fileName // Use fileName instead of resume
+    !resume 
   ) {
     return next(new ErrorHandler("Please fill all fields.", 400));
   }
@@ -130,7 +113,7 @@ export const postApplication = catchAsyncErrors(async (req, res, next) => {
     address,
     applicantID,
     employerID,
-    resume: fileName,
+    resume,
   });
   res.status(200).json({
     success: true,

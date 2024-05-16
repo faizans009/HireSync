@@ -17,6 +17,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 console.log(__dirname)
 const app = express();
+import bodyParser from "body-parser";
 config({ path: "./config/config.env" });
 
 app.use(
@@ -26,12 +27,14 @@ app.use(
     credentials: true,
   })
 );
-
+app.use("/uploads/", express.static("uploads")); 
 
 app.use(cookieParser());
 app.use(express.json());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.urlencoded({ extended: true }));
-app.use('/', express.static(path.join(__dirname, './uploads'))); // E.G: http://localhost:4000/resume-1715576880008-425913424.pdf
+app.use('/', express.static(path.join(__dirname, './uploads'))); 
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/job", jobRouter);
 app.use("/api/v1/application", applicationRouter);

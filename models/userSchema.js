@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import validator from "validator";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import crypto from 'crypto';
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -59,6 +60,8 @@ const userSchema = new mongoose.Schema({
     required: [true, "Please select a role"],
     enum: ["Job Seeker", "Employer","Admin"],
   },
+  resetPasswordToken:String,
+  resetPasswordExpire:Date,
   createdAt: {
     type: Date,
     default: Date.now,
@@ -88,5 +91,15 @@ userSchema.methods.getJWTToken = function () {
     }
   );
 };
+
+userSchema.methods.getResetPasswordToken= async function(){
+  // generating token
+  const resetToken = crypto.randomBytes(20).toString('hex')
+  // hashing and adding token to userSchema
+  this.resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+  this.resetPasswordExpire = Date.now() + 15*60*1000
+  return resetToken;
+  
+}
 
 export const User = mongoose.model("User", userSchema);

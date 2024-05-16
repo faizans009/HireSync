@@ -1,9 +1,10 @@
 import { catchAsyncErrors } from "../middlewares/catchAsyncError.js";
 import { User } from "../models/userSchema.js";
 import { generateOTP } from "../utils/OTPGenerate.js";
-import {sendEmail} from "../utils/sendEmail.js";
 import ErrorHandler from "../middlewares/error.js";
 import { forgotPasswordToken, sendToken } from "../utils/jwtToken.js";
+import crypto from "crypto";
+import sendEmail from "../utils/sendEmail.js"
 import jwt from "jsonwebtoken";
 
 // old register
@@ -178,66 +179,66 @@ export const getUser = catchAsyncErrors((req, res, next) => {
 });
 
 // forgot password
-export const forgetPassword = async (req, res,next) => {
-  const { email } = req.body;
-  try {
-    const user = await User.findOne({ email });
-    if (!user) {
-      return new ResponseHandler(res, 404, false, "User not found");
-    }
+// export const forgetPassword = async (req, res,next) => {
+//   const { email } = req.body;
+//   try {
+//     const user = await User.findOne({ email });
+//     if (!user) {
+//       return new ResponseHandler(res, 404, false, "User not found");
+//     }
 
-    const otp = generateOTP();
-    await sendEmail(email, otp);
-    user.otp.value = otp;
-    user.otp.createdAt = new Date();
-    user.otp.expiresAt = new Date(Date.now() + 25 * 60 * 1000);
-    await user.save();
-    return res.status(200).json({ success: true, message: "OTP sent to your email" ,user});
-  } catch (error) {
-    next(new ErrorHandler("Forgot password failed", 500));
-  }
-};
+//     const otp = generateOTP();
+//     await sendEmail(email, otp);
+//     user.otp.value = otp;
+//     user.otp.createdAt = new Date();
+//     user.otp.expiresAt = new Date(Date.now() + 25 * 60 * 1000);
+//     await user.save();
+//     return res.status(200).json({ success: true, message: "OTP sent to your email" ,user});
+//   } catch (error) {
+//     next(new ErrorHandler("Forgot password failed", 500));
+//   }
+// };
 
-// verify forgot password otp
-export const forgetOTP = async (req, res,next) => {
-  const { enteredOTP, email } = req.body;
-  try {
-    const user = await User.findOne({email});
-    if (!user) {
-      return next(new ErrorHandler("User not found", 404));
-    }
-    if (user.otp.value !== enteredOTP ) {
-      return next(new ErrorHandler("Invalid otp", 401));
-    }
-    if (user.otp.expiresAt < new Date()) {
-      return next(new ErrorHandler("OTP expired", 400));
-    }
-    user.isVerified=true;
-    // user.otp = null;
-    await user.save();
-    const token = forgotPasswordToken(user, 201, res, "User Logged In!");
-    res.json({ token });
-  } catch (error) {
-    console.log(error.message);
-    next(new ErrorHandler("Validate otp failed", 500));
-  }
-};
-// update password
-export const updatePassword = async (req, res,next) => {
-  // console.log(req.user)
-  const { newPassword } = req.body;
+// // verify forgot password otp
+// export const forgetOTP = async (req, res,next) => {
+//   const { enteredOTP, email } = req.body;
+//   try {
+//     const user = await User.findOne({email});
+//     if (!user) {
+//       return next(new ErrorHandler("User not found", 404));
+//     }
+//     if (user.otp.value !== enteredOTP ) {
+//       return next(new ErrorHandler("Invalid otp", 401));
+//     }
+//     if (user.otp.expiresAt < new Date()) {
+//       return next(new ErrorHandler("OTP expired", 400));
+//     }
+//     user.isVerified=true;
+//     // user.otp = null;
+//     await user.save();
+//     const token = forgotPasswordToken(user, 201, res, "User Logged In!");
+//     res.json({ token });
+//   } catch (error) {
+//     console.log(error.message);
+//     next(new ErrorHandler("Validate otp failed", 500));
+//   }
+// };
+// // update password
+// export const updatePassword = async (req, res,next) => {
+//   // console.log(req.user)
+//   const { newPassword } = req.body;
   
-    const { email } = req.user;
-    // console.log(email)
-    // console.log(newPassword)
-    const user = await User.findOne({ email });
-    if (!user) {
-      return new ResponseHandler(res, 404, false, "User not found");
-    }
-    user.password=newPassword;
-    await user.save();
-      return res.status(200).json({ message: 'Password updated successfully' });
-    }
+//     const { email } = req.user;
+//     // console.log(email)
+//     // console.log(newPassword)
+//     const user = await User.findOne({ email });
+//     if (!user) {
+//       return new ResponseHandler(res, 404, false, "User not found");
+//     }
+//     user.password=newPassword;
+//     await user.save();
+//       return res.status(200).json({ message: 'Password updated successfully' });
+//     }
 
 
 export const allUsers = async (req, res) => {
@@ -259,3 +260,63 @@ export const getAllUsersData = async (req, res,next) => {
       res.send(users);
     };
 
+
+    export const forgetPassword = catchAsyncErrors(async (req, res, next) => {
+      const user = await User.findOne({ email: req.body.email })
+      if (!user) {
+          return next(new ErrorHandler("User not found with this email", 404))
+      }
+      const resetToken = await user.getResetPasswordToken()
+  
+      await user.save({ validateBeforeSave: false })
+  
+      const resetPasswordUrl = `${process.env.FRONTEND_URL}/password/reset/${resetToken}`;
+      const message = `Your password reset1 token is :- \n\n ${resetPasswordUrl} \n\n If you have not requested this email then please ignore it`;
+      try {
+  
+          await sendEmail({
+              email: user.email,
+              subject: `HireSync reset token`,
+              message
+  
+          })
+          res.status(200).json({
+              success: true,
+              message: `Email sent to ${user.email} successfully`
+          })
+  
+      } catch (error) {
+          user.resetPasswordToken = undefined
+          user.resetPasswordExpire = undefined
+  
+          await user.save({ validateBeforeSave: false })
+  
+          return next(new ErrorHandler(error.message, 500))
+      }
+  })
+  // reset password
+  export const resetPassword = catchAsyncErrors(async (req, res, next) => {
+  
+     console.log(req.body)
+      const resetPasswordToken = crypto
+          .createHash('sha256')
+          .update(req.params.token)
+          .digest('hex');
+  
+      const user = await User.findOne({
+          resetPasswordToken,
+          resetPasswordExpire: { $gt: Date.now() }
+      })
+      if (!user) {
+          return next(new ErrorHandler("Reset password token is invalid or has been expired", 400))
+      }
+  
+      if (req.body.password !== req.body.confirmPassword) {
+          return next(new ErrorHandler("Password not matched", 400))
+      }
+      user.password = req.body.password
+      user.resetPasswordToken = undefined
+      user.resetPasswordExpire = undefined
+      await user.save()
+      sendToken(user, 200, res)
+  })
